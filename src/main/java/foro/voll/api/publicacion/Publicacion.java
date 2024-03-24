@@ -1,7 +1,5 @@
 package foro.voll.api.publicacion;
 
-import foro.voll.api.autor.Autor;
-
 import jakarta.persistence.*;
 
 @Entity
@@ -16,23 +14,19 @@ public class Publicacion {
 
     private String contenido;
 
-    @ManyToOne
-    @JoinColumn(name = "autor_id")
-    private Autor autor;
+    private String etiqueta;
 
-    @Column(name = "fecha_creacion")
-    private String fechaCreacion;
+    private String fecha_creacion;
 
     private String estado;
 
-    private String etiquetas;
+
 
     public Publicacion(DatosPublicacion datosPublicacion) {
         this.titulo = datosPublicacion.titulo();
         this.contenido = datosPublicacion.contenido();
-        this.etiquetas = datosPublicacion.etiqueta();
-        this.autor = new Autor(datosPublicacion.autor());
-        this.fechaCreacion = datosPublicacion.fecha_creacion();
+        this.etiqueta = datosPublicacion.etiqueta();
+        this.fecha_creacion = datosPublicacion.fecha_creacion();
         this.estado = datosPublicacion.estado();
     }
 

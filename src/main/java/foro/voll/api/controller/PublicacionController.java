@@ -3,6 +3,8 @@ package foro.voll.api.controller;
 import foro.voll.api.publicacion.DatosPublicacion;
 import foro.voll.api.publicacion.Publicacion;
 import foro.voll.api.publicacion.PublicacionRepository;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +20,8 @@ public class PublicacionController {
     }
 
     @PostMapping
-    public void crearPublicacion(@RequestBody DatosPublicacion datosPublicacion){
-        System.out.println((new Publicacion(datosPublicacion)));
+    @Transactional
+    public void crearPublicacion(@RequestBody @Valid DatosPublicacion datosPublicacion){
+        publicacionRepository.save(new Publicacion(datosPublicacion));
     }
 }
