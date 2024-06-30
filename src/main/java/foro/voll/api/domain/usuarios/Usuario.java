@@ -1,5 +1,8 @@
 package foro.voll.api.domain.usuarios;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import foro.voll.api.domain.comentarios.Comentario;
+import foro.voll.api.domain.publicacion.Publicacion;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -9,6 +12,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 
@@ -24,6 +28,18 @@ public class Usuario implements UserDetails {
     private Long id;
     private String login;
     private String clave;
+    private String nombre;
+    private String apellido;
+    private String email;
+    private Timestamp fechaRegistro;
+
+    @OneToMany(mappedBy = "usuario")
+    @JsonBackReference
+    private List<Publicacion> publicaciones;
+
+    @OneToMany(mappedBy = "usuario")
+    @JsonBackReference
+    private List<Comentario> comentarios;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

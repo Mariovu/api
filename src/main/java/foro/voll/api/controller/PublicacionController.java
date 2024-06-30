@@ -1,24 +1,33 @@
 package foro.voll.api.controller;
 
 import foro.voll.api.domain.publicacion.*;
+import foro.voll.api.domain.usuarios.Usuario;
+import foro.voll.api.domain.usuarios.UsuarioRepository;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import java.net.URI;
 
 
 @RestController
 @RequestMapping("/publicaciones")
+@SecurityRequirement(name = "bearer-key")
 public class PublicacionController {
-
+    @Autowired
+    private UsuarioRepository usuarioRepository;
     private PublicacionRepository publicacionRepository;
     @Autowired
     public PublicacionController(PublicacionRepository publicacionRepository) {
@@ -29,16 +38,20 @@ public class PublicacionController {
     @Transactional
     public ResponseEntity<DatosRespuestaPublicacion> crearPublicacion(@RequestBody @Valid DatosPublicacion datosPublicacion,
                                                                       UriComponentsBuilder uriComponentsBuilder){
-       Publicacion publicacion = publicacionRepository.save(new Publicacion(datosPublicacion));
-       DatosRespuestaPublicacion datosRespuestaPublicacion=new DatosRespuestaPublicacion(
-               publicacion.getId(),
-               publicacion.getTitulo(),
-               publicacion.getContenido(),
-               publicacion.getEtiqueta(),
-               publicacion.getFecha_creacion());
-       URI url=uriComponentsBuilder.path("/publicaciones/{id}").buildAndExpand(publicacion.getId()).toUri();
-       return ResponseEntity.created(url).body(datosRespuestaPublicacion);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Usuario usuario = (Usuario) authentication.getPrincipal();
 
+        Publicacion publicacion = new Publicacion(datosPublicacion, usuario);
+        publicacion = publicacionRepository.save(publicacion);
+        DatosRespuestaPublicacion datosRespuestaPublicacion = new DatosRespuestaPublicacion(
+                publicacion.getId(),
+                publicacion.getTitulo(),
+                publicacion.getContenido(),
+                publicacion.getEtiqueta(),
+                publicacion.getFecha_creacion(),
+                publicacion.getIdUsuario());
+        URI url = uriComponentsBuilder.path("/publicaciones/{id}").buildAndExpand(publicacion.getId()).toUri();
+        return ResponseEntity.created(url).body(datosRespuestaPublicacion);
     }
 
     @GetMapping
@@ -56,8 +69,8 @@ public class PublicacionController {
                 publicacion.getTitulo(),
                 publicacion.getContenido(),
                 publicacion.getEtiqueta(),
-                publicacion.getFecha_creacion()));
-
+                publicacion.getFecha_creacion(),
+                publicacion.getIdUsuario()));
     }
 
     @DeleteMapping("/{id}")
@@ -70,13 +83,15 @@ public class PublicacionController {
 
     @GetMapping("/{id}")
     public ResponseEntity<DatosRespuestaPublicacion> retornaDatosPublicacion(@PathVariable Long id ){
+
         Publicacion publicacion=publicacionRepository.getReferenceById(id);
         var datosPublicacion=new DatosRespuestaPublicacion(
                 publicacion.getId(),
                 publicacion.getTitulo(),
                 publicacion.getContenido(),
                 publicacion.getEtiqueta(),
-                publicacion.getFecha_creacion());
+                publicacion.getFecha_creacion(),
+                publicacion.getIdUsuario());
         return ResponseEntity.ok(datosPublicacion);
     }
 }
