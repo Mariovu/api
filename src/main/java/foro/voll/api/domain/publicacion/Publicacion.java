@@ -1,11 +1,14 @@
 package foro.voll.api.domain.publicacion;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import foro.voll.api.domain.etiquetas.Etiqueta;
 import foro.voll.api.domain.usuarios.Usuario;
 import jakarta.persistence.*;
 import lombok.Getter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "publicaciones")
@@ -20,8 +23,6 @@ public class Publicacion {
 
     private String contenido;
 
-    private String etiqueta;
-
     private String fecha_creacion;
 
     private Boolean estado;
@@ -31,6 +32,13 @@ public class Publicacion {
     @JsonIgnore
     private Usuario usuario;
 
+    @ManyToMany
+    @JoinTable(
+            name = "publicaciones_has_etiquetas",
+            joinColumns = @JoinColumn(name = "publicacion_id"),
+            inverseJoinColumns = @JoinColumn(name = "etiqueta_id"))
+    private List<Etiqueta> etiquetas=new ArrayList<>();
+
     @JsonProperty("id_usuario")
     public Long getIdUsuario() {
         return usuario!= null? usuario.getId() : null;
@@ -38,10 +46,9 @@ public class Publicacion {
 
     public Publicacion() {}
 
-    public Publicacion(DatosPublicacion datosPublicacion, Usuario usuario) {
+    public Publicacion(DatosPublicacionConEtiquetas datosPublicacion, Usuario usuario) {
         this.titulo = datosPublicacion.titulo();
         this.contenido = datosPublicacion.contenido();
-        this.etiqueta = datosPublicacion.etiqueta();
         this.fecha_creacion = datosPublicacion.fecha_creacion();
         this.estado = true;
         this.usuario=usuario;
@@ -53,9 +60,6 @@ public class Publicacion {
         }
         if(datosActualizarPublicacion.contenido()!=null){
             this.contenido= datosActualizarPublicacion.contenido();
-        }
-        if(datosActualizarPublicacion.etiqueta()!=null){
-            this.etiqueta= datosActualizarPublicacion.etiqueta();
         }
     }
 
